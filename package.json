@@ -1,6 +1,6 @@
 {
   "name": "local-knowledge-agent-poc",
-  "version": "0.0.0-development",
+  "version": "1.0.0",
   "private": true,
   "main": "src/main.js",
   "author": {
@@ -17,7 +17,10 @@
     "appId": "com.local-knowledge-agent-poc",
     "productName": "Local Knowledge Agent",
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Utility"
     },
     "files": [
@@ -35,4 +38,4 @@
     "electron-builder": "^24.12.0",
     "semantic-release": "^23.0.2"
   }
-} 
+}
