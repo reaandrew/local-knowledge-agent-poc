@@ -13,8 +13,8 @@
   },
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder build --publish always",
-    "build:linux": "electron-builder build --linux AppImage --publish always",
+    "build": "electron-builder build",
+    "build:linux": "electron-builder build --linux AppImage",
     "semantic-release": "semantic-release",
     "test": "jest",
     "test:watch": "jest --watch",
