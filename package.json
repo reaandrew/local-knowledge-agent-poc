@@ -80,6 +80,7 @@
     "ajv": "^8.17.1",
     "ajv-formats": "^2.1.1",
     "atomically": "^1.7.0",
+    "axios": "^1.6.5",
     "conf": "^10.2.0",
     "debounce-fn": "^4.0.0",
     "dot-prop": "^6.0.1",
