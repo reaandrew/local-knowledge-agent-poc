@@ -1,8 +1,17 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
+const { autoUpdater } = require('electron-updater');
+
+// Configure auto-updater
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'info';
+
+let mainWindow;
 
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
@@ -11,12 +20,15 @@ function createWindow() {
     }
   });
 
-  win.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
   
   // Open DevTools in development
   if (process.env.NODE_ENV === 'development') {
-    win.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   }
+
+  // Check for updates when the window is created
+  autoUpdater.checkForUpdates();
 }
 
 // Initialize app
@@ -44,4 +56,50 @@ ipcMain.on('query', async (event, query) => {
   } catch (error) {
     event.reply('error', error.message);
   }
-}); 
+});
+
+// Auto-updater events
+autoUpdater.on('checking-for-update', () => {
+  sendStatusToWindow('Checking for updates...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  sendStatusToWindow('Update available. Downloading...');
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  sendStatusToWindow('Application is up to date.');
+});
+
+autoUpdater.on('error', (err) => {
+  sendStatusToWindow(`Error in auto-updater: ${err.toString()}`);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let message = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`;
+  sendStatusToWindow(message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  sendStatusToWindow('Update downloaded. Will install on restart.');
+  
+  // Ask user if they want to restart now
+  dialog.showMessageBox({
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: 'A new version has been downloaded.',
+    detail: 'Restart the application to apply the updates.'
+  }).then((returnValue) => {
+    if (returnValue.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+});
+
+function sendStatusToWindow(text) {
+  if (mainWindow) {
+    mainWindow.webContents.send('update-message', text);
+  }
+  console.log(text);
+} 
