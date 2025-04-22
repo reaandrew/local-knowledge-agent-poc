@@ -57,13 +57,11 @@
       {
         "provider": "github",
         "owner": "reaandrew",
-        "repo": "local-knowledge-agent-poc"
+        "repo": "local-knowledge-agent-poc",
+        "releaseType": "release"
       }
     ],
-    "generateUpdatesFilesForAllChannels": false,
-    "releaseInfo": {
-      "releaseNotesFile": "CHANGELOG.md"
-    }
+    "generateUpdatesFilesForAllChannels": false
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
