@@ -55,6 +55,13 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:coverage
         
+      - name: Debug SonarCloud Info
+        run: |
+          echo "Sonar project key: local-knowledge-agent-poc"
+          echo "Sonar organization: reaandrew"
+          echo "GitHub token available: ${{ secrets.GITHUB_TOKEN != '' }}"
+          echo "Sonar token available: ${{ secrets.SONAR_TOKEN != '' }}"
+        
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -62,8 +69,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.qualitygate.timeout=300
+            -Dsonar.verbose=true
             -Dsonar.projectKey=local-knowledge-agent-poc
             -Dsonar.organization=reaandrew
             -Dsonar.sources=src
