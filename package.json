@@ -9,7 +9,7 @@
   },
   "description": "A local knowledge agent proof of concept",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=18.12.1"
   },
   "scripts": {
     "start": "electron .",
