@@ -48,8 +48,12 @@
       "category": "Utility",
       "icon": "images/logo.png"
     },
-    "publish": null,
-    "generateUpdatesFilesForAllChannels": false
+    "publish": [{
+      "provider": "github",
+      "owner": "reaandrew",
+      "repo": "local-knowledge-agent-poc"
+    }],
+    "generateUpdatesFilesForAllChannels": true
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
