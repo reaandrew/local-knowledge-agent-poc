@@ -1,11 +1,13 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
+const log = require('electron-log');
+const settings = require('./store/settings');
 
 // Configure auto-updater
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
-autoUpdater.logger = require('electron-log');
+autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
 let mainWindow;
@@ -102,4 +104,34 @@ function sendStatusToWindow(text) {
     mainWindow.webContents.send('update-message', text);
   }
   console.log(text);
-} 
+}
+
+// IPC handlers for settings
+ipcMain.on('settings:getFeatures', (event) => {
+  event.reply('settings:features', settings.get('features'));
+});
+
+ipcMain.on('settings:enableFeature', (event, featureName) => {
+  settings.enableFeature(featureName);
+  event.reply('settings:features', settings.get('features'));
+});
+
+ipcMain.on('settings:disableFeature', (event, featureName) => {
+  settings.disableFeature(featureName);
+  event.reply('settings:features', settings.get('features'));
+});
+
+ipcMain.on('settings:getSelectedModel', (event) => {
+  event.reply('settings:selectedModel', settings.getSelectedModel());
+});
+
+ipcMain.on('settings:setSelectedModel', (event, model) => {
+  settings.setSelectedModel(model);
+  event.reply('settings:selectedModel', settings.getSelectedModel());
+});
+
+// Handle model status updates
+ipcMain.on('settings:setModelStatus', (event, status) => {
+  settings.setModelStatus(status);
+  event.reply('settings:selectedModel', settings.getSelectedModel());
+}); 

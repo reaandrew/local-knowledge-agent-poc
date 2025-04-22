@@ -6,76 +6,105 @@
     <title>Local Knowledge Agent</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
+        .hidden {
+            display: none;
         }
-        p {
-            color: #666;
-            line-height: 1.6;
-        }
-        form {
+        #chat-interface {
+            display: none;
             margin-top: 20px;
         }
-        input[type="text"] {
-            width: 100%;
+        #settings-panel {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+        #model-status {
+            margin: 10px 0;
             padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+        .chat-container {
+            height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        #query-form {
+            display: flex;
+            gap: 10px;
+        }
+        #query-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
         }
         button {
+            padding: 8px 16px;
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 16px;
         }
         button:hover {
             background-color: #0056b3;
         }
-        #response {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: #f8f9fa;
-        }
         #update-status {
             margin-top: 10px;
-            padding: 8px;
-            border-radius: 4px;
-            background-color: #e9ecef;
-            font-size: 14px;
-            color: #495057;
+            color: #666;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Local Knowledge Agent</h1>
-        <p>Welcome to Local Knowledge Agent</p>
-        <div id="update-status">Checking for updates...</div>
-        <form>
-            <input type="text" placeholder="Enter your query..." required>
-            <button type="submit">Send</button>
-        </form>
-        <div id="response"></div>
+        
+        <!-- Settings Panel -->
+        <div id="settings-panel">
+            <h2>Settings</h2>
+            <div id="model-status"></div>
+            <div id="model-selection">
+                <h3>Select Model</h3>
+                <select id="model-select">
+                    <option value="">Choose a model...</option>
+                </select>
+                <button id="download-model">Download Model</button>
+            </div>
+        </div>
+
+        <!-- Chat Interface -->
+        <div id="chat-interface">
+            <div class="chat-container" id="chat-messages"></div>
+            <form id="query-form">
+                <input type="text" id="query-input" placeholder="Type your message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+
+        <!-- Original Query Interface -->
+        <div id="query-interface">
+            <form>
+                <input type="text" placeholder="Enter your query">
+                <button type="submit">Submit</button>
+            </form>
+            <div id="result"></div>
+        </div>
+
+        <div id="update-status"></div>
     </div>
     <script src="renderer.js"></script>
 </body>
