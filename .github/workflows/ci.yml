@@ -100,5 +100,18 @@ jobs:
           # Get the current version
           VERSION=$(node -p "require('./package.json').version")
           
-          # Attach assets to the release
-          gh release upload "v$VERSION" dist/*.AppImage dist/*.deb --clobber 
+          # Create release notes from git log if CHANGELOG.md doesn't exist
+          if [ ! -f CHANGELOG.md ]; then
+            echo "## What's Changed" > CHANGELOG.md
+            git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
+          fi
+          
+          # Upload AppImage if it exists
+          if ls dist/*.AppImage 1> /dev/null 2>&1; then
+            gh release upload "v$VERSION" dist/*.AppImage --clobber
+          fi
+          
+          # Upload deb package if it exists
+          if ls dist/*.deb 1> /dev/null 2>&1; then
+            gh release upload "v$VERSION" dist/*.deb --clobber
+          fi 
