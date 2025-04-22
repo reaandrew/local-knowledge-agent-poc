@@ -3,6 +3,7 @@ const path = require('path');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 const settings = require('./store/settings');
+const modelManager = require('./services/modelManager');
 
 // Configure auto-updater
 autoUpdater.autoDownload = true;
@@ -128,6 +129,36 @@ ipcMain.on('settings:getSelectedModel', (event) => {
 ipcMain.on('settings:setSelectedModel', (event, model) => {
   settings.setSelectedModel(model);
   event.reply('settings:selectedModel', settings.getSelectedModel());
+});
+
+// Model management IPC handlers
+ipcMain.on('model:getAvailable', (event) => {
+  event.reply('model:available', modelManager.getAvailableModels());
+});
+
+ipcMain.on('model:getStatus', (event, modelId) => {
+  event.reply('model:status', modelManager.getModelStatus(modelId));
+});
+
+ipcMain.on('model:download', async (event, modelId) => {
+  try {
+    await modelManager.downloadModel(modelId, (progress) => {
+      event.reply('model:downloadProgress', progress);
+    });
+    event.reply('model:downloadComplete', modelId);
+  } catch (error) {
+    event.reply('model:downloadError', error.message);
+  }
+});
+
+ipcMain.on('model:delete', (event, modelId) => {
+  const success = modelManager.deleteModel(modelId);
+  event.reply('model:deleteComplete', { modelId, success });
+});
+
+ipcMain.on('model:checkRequirements', (event, modelId) => {
+  const requirements = modelManager.checkSystemRequirements(modelId);
+  event.reply('model:requirements', requirements);
 });
 
 // Handle model status updates

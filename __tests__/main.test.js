@@ -7,7 +7,8 @@ jest.mock('electron', () => ({
   app: {
     whenReady: jest.fn().mockResolvedValue(),
     on: jest.fn(),
-    getVersion: jest.fn().mockReturnValue('1.0.0')
+    getVersion: jest.fn().mockReturnValue('1.0.0'),
+    getPath: jest.fn().mockReturnValue('/mock/path')
   },
   BrowserWindow: jest.fn().mockImplementation(() => ({
     loadFile: jest.fn(),
@@ -19,6 +20,49 @@ jest.mock('electron', () => ({
   ipcMain: {
     on: jest.fn()
   }
+}));
+
+// Mock fs module
+jest.mock('fs', () => ({
+  existsSync: jest.fn().mockReturnValue(true),
+  mkdirSync: jest.fn(),
+  createWriteStream: jest.fn(),
+  unlinkSync: jest.fn()
+}));
+
+// Mock electron-store
+jest.mock('electron-store', () => {
+  return jest.fn().mockImplementation(() => ({
+    store: {
+      features: {},
+      selectedModel: null
+    },
+    get: jest.fn((key) => {
+      const store = {
+        features: {},
+        selectedModel: null
+      };
+      return store[key];
+    }),
+    set: jest.fn(),
+    delete: jest.fn(),
+    clear: jest.fn(),
+    has: jest.fn(),
+    onDidChange: jest.fn(),
+    onDidAnyChange: jest.fn()
+  }));
+});
+
+// Mock settings module
+jest.mock('../src/store/settings', () => ({
+  get: jest.fn(),
+  set: jest.fn(),
+  getModelDirectory: jest.fn().mockReturnValue('/mock/model/path'),
+  getSelectedModel: jest.fn(),
+  setSelectedModel: jest.fn(),
+  setModelStatus: jest.fn(),
+  enableFeature: jest.fn(),
+  disableFeature: jest.fn()
 }));
 
 // Mock electron-updater

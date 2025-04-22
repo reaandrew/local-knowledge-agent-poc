@@ -30,7 +30,7 @@ describe('index.html', () => {
   });
 
   test('contains welcome message', () => {
-    expect(htmlContent).toMatch(/Welcome to Local Knowledge Agent/);
+    expect(htmlContent).toMatch(/<h1>Local Knowledge Agent<\/h1>/);
   });
 
   test('contains required script tags', () => {
@@ -47,5 +47,17 @@ describe('index.html', () => {
     expect(htmlContent).toMatch(/font-family:/);
     expect(htmlContent).toMatch(/margin:/);
     expect(htmlContent).toMatch(/padding:/);
+  });
+
+  test('contains settings panel', () => {
+    expect(htmlContent).toMatch(/<div id="settings-panel">/);
+    expect(htmlContent).toMatch(/<div id="model-status">/);
+    expect(htmlContent).toMatch(/<select id="model-select">/);
+  });
+
+  test('contains chat interface', () => {
+    expect(htmlContent).toMatch(/<div id="chat-interface">/);
+    expect(htmlContent).toMatch(/<div class="chat-container" id="chat-messages">/);
+    expect(htmlContent).toMatch(/<form id="query-form">/);
   });
 }); 

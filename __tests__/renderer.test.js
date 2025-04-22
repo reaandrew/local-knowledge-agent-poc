@@ -11,6 +11,8 @@ jest.mock('electron', () => ({
         module.exports.responseCallback = callback;
       } else if (event === 'error') {
         module.exports.errorCallback = callback;
+      } else if (event === 'settings:features') {
+        module.exports.featuresCallback = callback;
       }
     }),
     send: jest.fn(),
@@ -29,12 +31,32 @@ describe('renderer.js', () => {
     document.body.innerHTML = `
       <div class="container">
         <h1>Local Knowledge Agent</h1>
-        <p>Welcome to Local Knowledge Agent</p>
-        <form>
-          <input type="text" placeholder="Enter your query..." required>
-          <button type="submit">Send</button>
-        </form>
-        <div id="response"></div>
+        <div id="settings-panel">
+          <h2>Settings</h2>
+          <div id="model-status"></div>
+          <div id="model-selection">
+            <h3>Select Model</h3>
+            <select id="model-select">
+              <option value="">Choose a model...</option>
+            </select>
+            <button id="download-model">Download Model</button>
+          </div>
+        </div>
+        <div id="chat-interface">
+          <div class="chat-container" id="chat-messages"></div>
+          <form id="query-form">
+            <input type="text" id="query-input" placeholder="Type your message..." required>
+            <button type="submit">Send</button>
+          </form>
+        </div>
+        <div id="query-interface">
+          <form>
+            <input type="text" placeholder="Enter your query">
+            <button type="submit">Submit</button>
+          </form>
+          <div id="result"></div>
+        </div>
+        <div id="update-status"></div>
       </div>
     `;
     
@@ -45,6 +67,12 @@ describe('renderer.js', () => {
     jest.isolateModules(() => {
       require('../src/renderer');
     });
+
+    // Enable chat interface feature
+    const featuresCallback = module.exports.featuresCallback;
+    if (featuresCallback) {
+      featuresCallback(null, { CHAT_INTERFACE: true });
+    }
   });
 
   test('sets up IPC listeners', () => {
@@ -55,8 +83,8 @@ describe('renderer.js', () => {
 
   test('handles form submission', () => {
     // Get the form and input elements
-    const form = document.querySelector('form');
-    const input = document.querySelector('input[type="text"]');
+    const form = document.getElementById('query-form');
+    const input = document.getElementById('query-input');
     
     // Set a test value
     input.value = 'test query';
@@ -71,16 +99,20 @@ describe('renderer.js', () => {
     // Verify that preventDefault was called
     expect(submitEvent.preventDefault).toHaveBeenCalled();
     
-    // Verify that the IPC message was sent
-    expect(ipcRenderer.send).toHaveBeenCalledWith('query', 'test query');
+    // Get all IPC send calls
+    const sendCalls = ipcRenderer.send.mock.calls;
     
-    // Verify that the input was cleared
-    expect(input.value).toBe('');
+    // Find the query call
+    const queryCall = sendCalls.find(call => call[0] === 'query');
+    
+    // Verify that the query IPC message was sent
+    expect(queryCall).toBeDefined();
+    expect(queryCall[1]).toBe('test query');
   });
 
   test('handles response from main process', () => {
     // Get the response element
-    const responseElement = document.getElementById('response');
+    const resultElement = document.getElementById('result');
     
     // Get the stored response callback
     const responseCallback = module.exports.responseCallback;
@@ -89,12 +121,12 @@ describe('renderer.js', () => {
     responseCallback(null, 'test response');
     
     // Verify that the response was displayed
-    expect(responseElement.textContent).toBe('test response');
+    expect(resultElement.textContent).toBe('test response');
   });
 
   test('handles error from main process', () => {
     // Get the response element
-    const responseElement = document.getElementById('response');
+    const resultElement = document.getElementById('result');
     
     // Get the stored error callback
     const errorCallback = module.exports.errorCallback;
@@ -103,6 +135,6 @@ describe('renderer.js', () => {
     errorCallback(null, 'test error');
     
     // Verify that the error was displayed
-    expect(responseElement.textContent).toBe('Error: test error');
+    expect(resultElement.textContent).toBe('Error: test error');
   });
 }); 

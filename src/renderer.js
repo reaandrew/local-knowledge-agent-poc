@@ -3,6 +3,7 @@ const { ipcRenderer } = require('electron');
 // Feature toggle state
 let features = {};
 let selectedModel = null;
+let availableModels = [];
 
 // Initialize features
 ipcRenderer.send('settings:getFeatures');
@@ -18,9 +19,38 @@ ipcRenderer.on('settings:selectedModel', (event, model) => {
     updateUI();
 });
 
+// Initialize available models
+ipcRenderer.send('model:getAvailable');
+ipcRenderer.on('model:available', (event, models) => {
+    availableModels = models;
+    updateModelSelect();
+});
+
 // Helper function to check if a feature is enabled
 function isFeatureEnabled(featureName) {
     return features[featureName] || false;
+}
+
+// Update model select dropdown
+function updateModelSelect() {
+    const select = document.getElementById('model-select');
+    if (!select) return;
+
+    // Clear existing options
+    select.innerHTML = '<option value="">Choose a model...</option>';
+
+    // Add model options
+    availableModels.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = `${model.name} (${model.size})`;
+        select.appendChild(option);
+    });
+
+    // Set selected value if exists
+    if (selectedModel) {
+        select.value = selectedModel.id;
+    }
 }
 
 // Update UI based on feature toggles
@@ -46,8 +76,53 @@ function updateUI() {
     }
 }
 
+// Handle model selection
+document.getElementById('model-select')?.addEventListener('change', (e) => {
+    const modelId = e.target.value;
+    if (modelId) {
+        const model = availableModels.find(m => m.id === modelId);
+        if (model) {
+            ipcRenderer.send('settings:setSelectedModel', {
+                ...model,
+                status: 'not_downloaded'
+            });
+        }
+    }
+});
+
+// Handle model download
+document.getElementById('download-model')?.addEventListener('click', () => {
+    if (selectedModel) {
+        ipcRenderer.send('model:download', selectedModel.id);
+    }
+});
+
+// Handle download progress
+ipcRenderer.on('model:downloadProgress', (event, progress) => {
+    const modelStatus = document.getElementById('model-status');
+    if (modelStatus) {
+        modelStatus.textContent = `Downloading: ${progress.toFixed(1)}%`;
+    }
+});
+
+// Handle download completion
+ipcRenderer.on('model:downloadComplete', (event, modelId) => {
+    const modelStatus = document.getElementById('model-status');
+    if (modelStatus) {
+        modelStatus.textContent = `Model downloaded and ready`;
+    }
+});
+
+// Handle download error
+ipcRenderer.on('model:downloadError', (event, error) => {
+    const modelStatus = document.getElementById('model-status');
+    if (modelStatus) {
+        modelStatus.textContent = `Error: ${error}`;
+    }
+});
+
 // Event handler for form submission
-document.getElementById('query-form').addEventListener('submit', async (e) => {
+document.getElementById('query-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const query = document.getElementById('query-input').value;
     
