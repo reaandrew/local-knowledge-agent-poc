@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local Knowledge Agent</title>
     <style>
         body {
@@ -25,12 +27,47 @@
             color: #666;
             line-height: 1.6;
         }
+        form {
+            margin-top: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Local Knowledge Agent</h1>
-        <p>Welcome to the Local Knowledge Agent application. This is a proof of concept for a local knowledge agent implementation.</p>
+        <p>Welcome to Local Knowledge Agent</p>
+        <form>
+            <input type="text" placeholder="Enter your query..." required>
+            <button type="submit">Send</button>
+        </form>
+        <div id="response"></div>
     </div>
+    <script src="renderer.js"></script>
 </body>
 </html> 
