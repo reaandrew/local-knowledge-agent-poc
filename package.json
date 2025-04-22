@@ -43,19 +43,27 @@
     ],
     "linux": {
       "target": [
-        "AppImage"
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
       ],
       "category": "Utility",
       "icon": "images/logo.png"
     },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "reaandrew",
-        "repo": "local-knowledge-agent-poc"
-      }
-    ],
-    "generateUpdatesFilesForAllChannels": true
+    "publish": [{
+      "provider": "github",
+      "owner": "reaandrew",
+      "repo": "local-knowledge-agent-poc",
+      "private": false
+    }],
+    "generateUpdatesFilesForAllChannels": true,
+    "releaseInfo": {
+      "provider": "github",
+      "owner": "reaandrew",
+      "repo": "local-knowledge-agent-poc",
+      "private": false
+    }
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
