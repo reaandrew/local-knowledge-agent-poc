@@ -54,30 +54,12 @@ jobs:
       
       - name: Run tests with coverage
         run: npm run test:coverage
-        
-      - name: Debug SonarCloud Info
-        run: |
-          echo "Sonar project key: local-knowledge-agent-poc"
-          echo "Sonar organization: reaandrew"
-          echo "GitHub token available: ${{ secrets.GITHUB_TOKEN != '' }}"
-          echo "Sonar token available: ${{ secrets.SONAR_TOKEN != '' }}"
-        
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.verbose=true
-            -Dsonar.projectKey=local-knowledge-agent-poc
-            -Dsonar.organization=reaandrew
-            -Dsonar.sources=src
-            -Dsonar.tests=src
-            -Dsonar.test.inclusions=**/__tests__/**/*.*
-            -Dsonar.exclusions=node_modules/**,**/__tests__/**,dist/**,src/preload.js
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.testExecutionReportPaths=coverage/test-report.xml
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Generate a token on SonarCloud.io, add it to your repository as a secret
 
   version:
     name: Version
