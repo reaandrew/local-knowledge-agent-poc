@@ -61,7 +61,8 @@
         "releaseType": "release"
       }
     ],
-    "generateUpdatesFilesForAllChannels": false
+    "generateUpdatesFilesForAllChannels": false,
+    "artifactName": "${productName}-${version}.${ext}"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
