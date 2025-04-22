@@ -35,7 +35,24 @@ function createWindow() {
 }
 
 // Initialize app
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  
+  // Log application directories for debugging
+  const userDataPath = app.getPath('userData');
+  const homePath = require('os').homedir();
+  log.info(`Electron user data path: ${userDataPath}`);
+  log.info(`User home directory: ${homePath}`);
+  
+  // Check status of the selected model when app starts
+  const selectedModel = settings.getSelectedModel();
+  if (selectedModel) {
+    log.info(`Checking status of selected model: ${selectedModel.id}`);
+    // This will update the model status in settings if necessary
+    const status = modelManager.getModelStatus(selectedModel.id);
+    log.info(`Selected model status: ${status}`);
+  }
+});
 
 // Handle window-all-closed event
 app.on('window-all-closed', () => {
@@ -142,18 +159,51 @@ ipcMain.on('model:getStatus', (event, modelId) => {
 
 ipcMain.on('model:download', async (event, modelId) => {
   try {
+    log.info(`Received request to download model: ${modelId}`);
+    event.reply('model:downloadProgress', 0); // Send initial progress
+    
     await modelManager.downloadModel(modelId, (progress) => {
-      event.reply('model:downloadProgress', progress);
+      // Ensure progress is a valid number and within range (0-100)
+      if (typeof progress === 'number' && !isNaN(progress)) {
+        const validProgress = Math.max(0, Math.min(100, progress));
+        log.debug(`Download progress update: ${validProgress.toFixed(1)}%`);
+        event.reply('model:downloadProgress', validProgress);
+      }
     });
+    
+    log.info(`Download complete for model: ${modelId}`);
     event.reply('model:downloadComplete', modelId);
   } catch (error) {
-    event.reply('model:downloadError', error.message);
+    log.error(`Error downloading model: ${error.message}`);
+    event.reply('model:downloadError', `Failed to download model: ${error.message}`);
   }
 });
 
 ipcMain.on('model:delete', (event, modelId) => {
-  const success = modelManager.deleteModel(modelId);
-  event.reply('model:deleteComplete', { modelId, success });
+  try {
+    log.info(`Received request to delete model: ${modelId}`);
+    const success = modelManager.deleteModel(modelId);
+    
+    if (success) {
+      log.info(`Model ${modelId} deleted successfully`);
+      
+      // Update the model status in settings
+      const model = modelManager.getModelById(modelId);
+      if (model) {
+        settings.setSelectedModel({
+          ...model,
+          status: 'not_downloaded'
+        });
+      }
+    } else {
+      log.warn(`Failed to delete model ${modelId}`);
+    }
+    
+    event.reply('model:deleteComplete', { modelId, success });
+  } catch (error) {
+    log.error(`Error deleting model: ${error.message}`);
+    event.reply('model:deleteComplete', { modelId, success: false });
+  }
 });
 
 ipcMain.on('model:checkRequirements', (event, modelId) => {
