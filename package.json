@@ -16,9 +16,9 @@
     "build": "electron-builder build",
     "build:linux": "electron-builder build --linux AppImage",
     "semantic-release": "semantic-release",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test": "jest --config=package.json",
+    "test:watch": "jest --watch --config=package.json",
+    "test:coverage": "jest --coverage --config=package.json",
     "prepare": "husky install",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -47,8 +47,8 @@
     "*.{js,jsx,ts,tsx}": [
       "npx eslint --fix"
     ],
-    "src/**/*.{js,jsx,ts,tsx}": [
-      "npm test"
+    "*.js": [
+      "bash -c 'npm test'"
     ]
   },
   "build": {
