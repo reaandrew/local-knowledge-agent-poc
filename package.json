@@ -3,6 +3,11 @@
   "version": "0.0.0-development",
   "private": true,
   "main": "src/main.js",
+  "author": {
+    "name": "Andrew Rea",
+    "email": "reaandrew@gmail.com"
+  },
+  "description": "A local knowledge agent proof of concept",
   "scripts": {
     "start": "electron .",
     "build": "electron-builder",
