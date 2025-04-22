@@ -38,6 +38,8 @@ jobs:
       - name: Determine version
         id: version
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx semantic-release --dry-run
           echo "new_version=$(npm pkg get version | tr -d '"')" >> $GITHUB_OUTPUT
@@ -63,9 +65,9 @@ jobs:
         run: npm ci
 
       - name: Build Electron app
-        run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build
           
   release:
     name: Release
@@ -89,5 +91,5 @@ jobs:
       
       - name: Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release 
