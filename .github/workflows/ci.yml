@@ -53,13 +53,25 @@ jobs:
         run: npm ci
       
       - name: Run tests with coverage
-        run: npm run test:coverage -- --config=package.json
+        run: npm run test:coverage
         
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.qualitygate.timeout=300
+            -Dsonar.projectKey=local-knowledge-agent-poc
+            -Dsonar.organization=reaandrew
+            -Dsonar.sources=src
+            -Dsonar.tests=src
+            -Dsonar.test.inclusions=**/__tests__/**/*.*
+            -Dsonar.exclusions=node_modules/**,**/__tests__/**,dist/**,src/preload.js
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.testExecutionReportPaths=coverage/test-report.xml
 
   version:
     name: Version
