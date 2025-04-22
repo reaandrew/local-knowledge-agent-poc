@@ -33,7 +33,7 @@
   },
   "build": {
     "appId": "com.local-knowledge-agent-poc",
-    "productName": "Local Knowledge Agent",
+    "productName": "LocalKnowledgeAgent",
     "directories": {
       "output": "dist"
     },
@@ -55,7 +55,7 @@
       }
     ],
     "generateUpdatesFilesForAllChannels": false,
-    "artifactName": "${productName}-${version}.${ext}"
+    "artifactName": "${name}-${version}.${ext}"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
