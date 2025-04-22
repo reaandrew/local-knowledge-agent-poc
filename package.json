@@ -54,15 +54,11 @@
     "publish": [{
       "provider": "github",
       "owner": "reaandrew",
-      "repo": "local-knowledge-agent-poc",
-      "private": false
+      "repo": "local-knowledge-agent-poc"
     }],
     "generateUpdatesFilesForAllChannels": true,
     "releaseInfo": {
-      "provider": "github",
-      "owner": "reaandrew",
-      "repo": "local-knowledge-agent-poc",
-      "private": false
+      "releaseNotes": "See CHANGELOG.md for details"
     }
   },
   "devDependencies": {
