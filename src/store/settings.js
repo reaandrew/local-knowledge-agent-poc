@@ -7,7 +7,7 @@ const schema = {
         default: features
     },
     selectedModel: {
-        type: 'object',
+        type: ['object', 'null'],
         properties: {
             name: { type: 'string' },
             url: { type: 'string' },
