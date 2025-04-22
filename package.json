@@ -1,6 +1,6 @@
 {
   "name": "local-knowledge-agent-poc",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "main": "src/main.js",
   "author": {
@@ -28,7 +28,9 @@
       "package.json"
     ],
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Utility",
       "icon": "images/logo.png"
     },
