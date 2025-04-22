@@ -37,13 +37,8 @@
       "category": "Utility",
       "icon": "images/logo.png"
     },
-    "publish": {
-      "provider": "github",
-      "owner": "reaandrew",
-      "repo": "local-knowledge-agent-poc",
-      "private": false,
-      "releaseType": "release"
-    }
+    "publish": null,
+    "generateUpdatesFilesForAllChannels": false
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^11.1.0",

@@ -138,12 +138,20 @@ jobs:
             git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:"- %s" >> CHANGELOG.md
           fi
           
-          # Upload AppImage if it exists
+          # Create a temporary directory for assets
+          mkdir -p release-assets
+          
+          # Move AppImage to release assets
           if ls dist/*.AppImage 1> /dev/null 2>&1; then
-            gh release upload "v${{ needs.version.outputs.version }}" dist/*.AppImage --clobber
+            cp dist/*.AppImage release-assets/
           fi
           
-          # Upload deb package if it exists
+          # Move deb package to release assets
           if ls dist/*.deb 1> /dev/null 2>&1; then
-            gh release upload "v${{ needs.version.outputs.version }}" dist/*.deb --clobber
+            cp dist/*.deb release-assets/
+          fi
+          
+          # Upload assets to release
+          if [ -d "release-assets" ] && [ "$(ls -A release-assets)" ]; then
+            gh release upload "v${{ needs.version.outputs.version }}" release-assets/* --clobber
           fi 
