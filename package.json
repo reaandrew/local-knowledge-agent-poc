@@ -115,6 +115,7 @@
     "json-schema-typed": "^7.0.3",
     "locate-path": "^3.0.0",
     "mimic-fn": "^3.1.0",
+    "node-fetch": "^2.7.0",
     "p-limit": "^2.3.0",
     "p-locate": "^3.0.0",
     "p-try": "^2.2.0",

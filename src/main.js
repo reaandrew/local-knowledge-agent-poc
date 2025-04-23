@@ -4,6 +4,7 @@ const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 const settings = require('./store/settings');
 const modelManager = require('./services/modelManager');
+const inferenceService = require('./services/inferenceService');
 
 // Configure auto-updater
 autoUpdater.autoDownload = true;
@@ -71,9 +72,44 @@ app.on('activate', () => {
 // Handle IPC messages
 ipcMain.on('query', async (event, query) => {
   try {
-    // TODO: Implement query handling
-    event.reply('response', `Received query: ${query}`);
+    log.info(`Received query: ${query.substring(0, 100)}${query.length > 100 ? '...' : ''}`);
+    
+    // Get selected model
+    const selectedModel = settings.getSelectedModel();
+    if (!selectedModel) {
+      event.reply('response', 'No model selected. Please select a model first.');
+      return;
+    }
+    
+    // Check if model is downloaded
+    const isDownloaded = modelManager.isModelDownloaded(selectedModel.id);
+    if (!isDownloaded) {
+      event.reply('response', 'Model is not downloaded. Please download the model first.');
+      return;
+    }
+    
+    // Check if inference service is running
+    if (!inferenceService.isInferenceRunning()) {
+      event.reply('response', 'Starting inference service...');
+      try {
+        await inferenceService.startInference(selectedModel.id);
+      } catch (error) {
+        log.error(`Error starting inference: ${error.message}`);
+        event.reply('error', `Error starting inference: ${error.message}`);
+        return;
+      }
+    }
+    
+    // Send the query to the inference service
+    try {
+      const response = await inferenceService.query(query);
+      event.reply('response', response);
+    } catch (error) {
+      log.error(`Error querying model: ${error.message}`);
+      event.reply('error', `Error querying model: ${error.message}`);
+    }
   } catch (error) {
+    log.error(`Error processing query: ${error.message}`);
     event.reply('error', error.message);
   }
 });
@@ -244,4 +280,47 @@ ipcMain.on('dialog:openDirectory', async (event) => {
   if (!result.canceled && result.filePaths.length > 0) {
     event.reply('dialog:selectedDirectory', result.filePaths[0]);
   }
+});
+
+// Add inference service control IPC handlers
+ipcMain.on('inference:start', async (event, modelId) => {
+  try {
+    // Use selected model if no model ID provided
+    if (!modelId) {
+      const selectedModel = settings.getSelectedModel();
+      if (!selectedModel) {
+        event.reply('inference:status', { running: false, error: 'No model selected' });
+        return;
+      }
+      modelId = selectedModel.id;
+    }
+    
+    log.info(`Starting inference service with model: ${modelId}`);
+    await inferenceService.startInference(modelId);
+    event.reply('inference:status', { running: true, modelId });
+  } catch (error) {
+    log.error(`Error starting inference: ${error.message}`);
+    event.reply('inference:status', { running: false, error: error.message });
+  }
+});
+
+ipcMain.on('inference:stop', async (event) => {
+  try {
+    log.info('Stopping inference service');
+    const result = await inferenceService.stopInference();
+    event.reply('inference:status', { running: false, stopped: result });
+  } catch (error) {
+    log.error(`Error stopping inference: ${error.message}`);
+    event.reply('inference:status', { running: false, error: error.message });
+  }
+});
+
+ipcMain.on('inference:status', (event) => {
+  const running = inferenceService.isInferenceRunning();
+  event.reply('inference:status', { running });
+});
+
+// Cleanup inference service on app quit
+app.on('will-quit', () => {
+  inferenceService.stopInference();
 }); 

@@ -54,6 +54,12 @@ ipcRenderer.on('settings:modelDirectoryChanged', () => {
   }
 });
 
+// Initialize inference status
+ipcRenderer.send('inference:status');
+ipcRenderer.on('inference:status', (event, status) => {
+  updateInferenceUI(status);
+});
+
 // Helper function to check if a feature is enabled
 function isFeatureEnabled(featureName) {
   return features[featureName] || false;
@@ -87,6 +93,73 @@ function updateModelDirectoryUI() {
   if (modelDirectoryInput) {
     modelDirectoryInput.value = modelDirectory;
   }
+}
+
+// Update inference UI based on status
+function updateInferenceUI(status) {
+  const startButton = document.getElementById('start-inference');
+  const stopButton = document.getElementById('stop-inference');
+  const inferenceStatus = document.getElementById('inference-status');
+  const sendButton = document.getElementById('send-query');
+  
+  if (!startButton || !stopButton || !inferenceStatus || !sendButton) return;
+  
+  if (status.running) {
+    startButton.style.display = 'none';
+    stopButton.style.display = 'inline-block';
+    inferenceStatus.textContent = 'Inference service is running';
+    inferenceStatus.style.color = '#28a745';
+    sendButton.disabled = false;
+  } else {
+    startButton.style.display = 'inline-block';
+    stopButton.style.display = 'none';
+    sendButton.disabled = true;
+    
+    if (status.error) {
+      inferenceStatus.textContent = `Error: ${status.error}`;
+      inferenceStatus.style.color = '#dc3545';
+    } else if (status.stopped) {
+      inferenceStatus.textContent = 'Inference service stopped';
+      inferenceStatus.style.color = '#6c757d';
+    } else {
+      inferenceStatus.textContent = 'Inference service not running';
+      inferenceStatus.style.color = '#6c757d';
+    }
+  }
+}
+
+// Add message to chat
+function addMessageToChat(message, isUser = false) {
+  const chatMessages = document.getElementById('chat-messages');
+  if (!chatMessages) return;
+  
+  const messageElement = document.createElement('div');
+  messageElement.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+  messageElement.style.padding = '10px';
+  messageElement.style.margin = '5px 0';
+  messageElement.style.borderRadius = '5px';
+  messageElement.style.maxWidth = '80%';
+  
+  if (isUser) {
+    messageElement.style.backgroundColor = '#007bff';
+    messageElement.style.color = 'white';
+    messageElement.style.alignSelf = 'flex-end';
+    messageElement.style.marginLeft = 'auto';
+  } else {
+    messageElement.style.backgroundColor = '#f1f1f1';
+    messageElement.style.color = 'black';
+    messageElement.style.alignSelf = 'flex-start';
+    messageElement.style.marginRight = 'auto';
+  }
+  
+  // Handle newlines and preserve whitespace
+  const formattedMessage = message.replace(/\n/g, '<br>');
+  messageElement.innerHTML = formattedMessage;
+  
+  chatMessages.appendChild(messageElement);
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Update UI based on feature toggles
@@ -322,11 +395,54 @@ ipcRenderer.on('model:deleteComplete', (event, { modelId, success }) => {
   }
 });
 
+// Start inference service
+document.getElementById('start-inference')?.addEventListener('click', () => {
+  const inferenceStatus = document.getElementById('inference-status');
+  if (inferenceStatus) {
+    inferenceStatus.textContent = 'Starting inference service...';
+    inferenceStatus.style.color = '#6c757d';
+  }
+  
+  // Get selected model ID
+  const modelId = selectedModel ? selectedModel.id : null;
+  
+  if (!modelId) {
+    if (inferenceStatus) {
+      inferenceStatus.textContent = 'Error: No model selected';
+      inferenceStatus.style.color = '#dc3545';
+    }
+    return;
+  }
+  
+  ipcRenderer.send('inference:start', modelId);
+});
+
+// Stop inference service
+document.getElementById('stop-inference')?.addEventListener('click', () => {
+  const inferenceStatus = document.getElementById('inference-status');
+  if (inferenceStatus) {
+    inferenceStatus.textContent = 'Stopping inference service...';
+    inferenceStatus.style.color = '#6c757d';
+  }
+  
+  ipcRenderer.send('inference:stop');
+});
+
 // Event handler for form submission
 document.getElementById('query-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const query = document.getElementById('query-input').value;
-    
+  const queryInput = document.getElementById('query-input');
+  if (!queryInput) return;
+  
+  const query = queryInput.value.trim();
+  if (!query) return;
+  
+  // Add user message to chat
+  addMessageToChat(query, true);
+  
+  // Clear input
+  queryInput.value = '';
+  
   // Only process if chat interface is enabled
   if (isFeatureEnabled('CHAT_INTERFACE')) {
     ipcRenderer.send('query', query);
@@ -335,14 +451,27 @@ document.getElementById('query-form')?.addEventListener('submit', async (e) => {
 
 // Handle responses from main process
 ipcRenderer.on('response', (event, response) => {
+  // Add AI message to chat
+  addMessageToChat(response);
+  
+  // Also update result div for compatibility
   const resultDiv = document.getElementById('result');
-  resultDiv.textContent = response;
+  if (resultDiv) {
+    resultDiv.textContent = response;
+  }
 });
 
 // Handle errors from main process
 ipcRenderer.on('error', (event, error) => {
+  // Add error message to chat
+  const errorMessage = `Error: ${error}`;
+  addMessageToChat(errorMessage);
+  
+  // Also update result div for compatibility
   const resultDiv = document.getElementById('result');
-  resultDiv.textContent = `Error: ${error}`;
+  if (resultDiv) {
+    resultDiv.textContent = errorMessage;
+  }
 });
 
 // Handle update messages
