@@ -215,4 +215,33 @@ ipcMain.on('model:checkRequirements', (event, modelId) => {
 ipcMain.on('settings:setModelStatus', (event, status) => {
   settings.setModelStatus(status);
   event.reply('settings:selectedModel', settings.getSelectedModel());
+});
+
+// Add model directory handlers
+ipcMain.on('settings:getModelDirectory', (event) => {
+  event.reply('settings:modelDirectory', settings.getModelDirectory());
+});
+
+ipcMain.on('settings:setModelDirectory', (event, directory) => {
+  settings.setModelDirectory(directory);
+  
+  // Reload the model manager with the new directory
+  const newDirectory = modelManager.reloadModelDirectory();
+  log.info(`Model directory changed to: ${newDirectory}`);
+  
+  // Notify the renderer that the directory has changed
+  event.reply('settings:modelDirectory', settings.getModelDirectory());
+  mainWindow.webContents.send('settings:modelDirectoryChanged');
+});
+
+// Add handler for directory dialog
+ipcMain.on('dialog:openDirectory', async (event) => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+    title: 'Select Model Directory'
+  });
+  
+  if (!result.canceled && result.filePaths.length > 0) {
+    event.reply('dialog:selectedDirectory', result.filePaths[0]);
+  }
 }); 

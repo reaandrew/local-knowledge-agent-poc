@@ -25,6 +25,23 @@ class ModelManager {
     this.ensureModelDirectory();
   }
 
+  // Add method to reload model directory from settings
+  reloadModelDirectory() {
+    const configuredDir = settings.getModelDirectory();
+    
+    // If path starts with dot or is relative, place it in user's home directory
+    if (configuredDir.startsWith('.') || !path.isAbsolute(configuredDir)) {
+      this.modelDirectory = path.join(os.homedir(), configuredDir);
+    } else {
+      // If it's an absolute path, use as is
+      this.modelDirectory = configuredDir;
+    }
+    
+    log.info(`Reloaded model directory: ${this.modelDirectory}`);
+    this.ensureModelDirectory();
+    return this.modelDirectory;
+  }
+
   // Ensure the model directory exists
   ensureModelDirectory() {
     if (!fs.existsSync(this.modelDirectory)) {

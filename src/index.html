@@ -128,6 +128,18 @@
         <!-- Settings Panel -->
         <div id="settings-panel">
             <h2>Settings</h2>
+            
+            <!-- Add Model Directory Setting -->
+            <div id="model-directory-setting">
+                <h3>Model Directory</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="model-directory-input" style="flex-grow: 1; padding: 8px; border: 1px solid #ccc; border-radius: 3px;">
+                    <button id="save-model-directory">Save</button>
+                    <button id="browse-model-directory">Browse</button>
+                </div>
+                <div id="model-directory-status" style="margin-bottom: 15px; font-size: 14px; color: #666;"></div>
+            </div>
+            
             <div id="model-status"></div>
             <div id="model-selection">
                 <h3>Select Model</h3>

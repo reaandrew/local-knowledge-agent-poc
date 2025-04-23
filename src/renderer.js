@@ -4,6 +4,7 @@ const { ipcRenderer } = require('electron');
 let features = {};
 let selectedModel = null;
 let availableModels = [];
+let modelDirectory = '';
 
 // Initialize features
 ipcRenderer.send('settings:getFeatures');
@@ -24,6 +25,33 @@ ipcRenderer.send('model:getAvailable');
 ipcRenderer.on('model:available', (event, models) => {
   availableModels = models;
   updateModelSelect();
+});
+
+// Initialize model directory
+ipcRenderer.send('settings:getModelDirectory');
+ipcRenderer.on('settings:modelDirectory', (event, directory) => {
+  modelDirectory = directory;
+  updateModelDirectoryUI();
+});
+
+// Model directory change notification
+ipcRenderer.on('settings:modelDirectoryChanged', () => {
+  // Refresh available models and model status
+  ipcRenderer.send('model:getAvailable');
+  if (selectedModel) {
+    ipcRenderer.send('model:getStatus', selectedModel.id);
+  }
+  
+  const modelDirectoryStatus = document.getElementById('model-directory-status');
+  if (modelDirectoryStatus) {
+    modelDirectoryStatus.textContent = 'Model directory updated. Checking for models...';
+    modelDirectoryStatus.style.color = '#007bff';
+    
+    // Clear the status message after 3 seconds
+    setTimeout(() => {
+      modelDirectoryStatus.textContent = '';
+    }, 3000);
+  }
 });
 
 // Helper function to check if a feature is enabled
@@ -50,6 +78,14 @@ function updateModelSelect() {
   // Set selected value if exists
   if (selectedModel) {
     select.value = selectedModel.id;
+  }
+}
+
+// Update model directory input field and status
+function updateModelDirectoryUI() {
+  const modelDirectoryInput = document.getElementById('model-directory-input');
+  if (modelDirectoryInput) {
+    modelDirectoryInput.value = modelDirectory;
   }
 }
 
@@ -365,4 +401,48 @@ function updateModelUI() {
       deleteButton.style.display = 'none';
     }
   }
-} 
+}
+
+// Handle model directory save
+document.getElementById('save-model-directory')?.addEventListener('click', () => {
+  const modelDirectoryInput = document.getElementById('model-directory-input');
+  const modelDirectoryStatus = document.getElementById('model-directory-status');
+  
+  if (modelDirectoryInput) {
+    const newDirectory = modelDirectoryInput.value.trim();
+    
+    if (newDirectory && newDirectory !== modelDirectory) {
+      ipcRenderer.send('settings:setModelDirectory', newDirectory);
+      
+      if (modelDirectoryStatus) {
+        modelDirectoryStatus.textContent = 'Saving directory...';
+        modelDirectoryStatus.style.color = '#666';
+      }
+    } else {
+      if (modelDirectoryStatus) {
+        modelDirectoryStatus.textContent = 'No changes to save';
+        modelDirectoryStatus.style.color = '#666';
+        
+        // Clear the status message after 3 seconds
+        setTimeout(() => {
+          modelDirectoryStatus.textContent = '';
+        }, 3000);
+      }
+    }
+  }
+});
+
+// Handle directory browse button
+document.getElementById('browse-model-directory')?.addEventListener('click', () => {
+  ipcRenderer.send('dialog:openDirectory');
+});
+
+// Handle the selected directory from the dialog
+ipcRenderer.on('dialog:selectedDirectory', (event, directory) => {
+  if (directory) {
+    const modelDirectoryInput = document.getElementById('model-directory-input');
+    if (modelDirectoryInput) {
+      modelDirectoryInput.value = directory;
+    }
+  }
+}); 
